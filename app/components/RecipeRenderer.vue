@@ -8,6 +8,7 @@
         </svg>
       </div>
       <h1>{{ recipe.title }}</h1>
+      <pre v-if="debug">{{ JSON.stringify(recipe, null, 2) }}</pre>
       <div class="recipe-meta">
         <span>Tid i alt {{ getMetaValue('time') }} min.</span>
         <span>Arbejdstid {{ getMetaValue('prepTime') }} min.</span>
@@ -47,7 +48,7 @@
 </template>
 
 <script setup>
-import { defineProps, computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const props = defineProps({
   recipe: {
@@ -56,35 +57,53 @@ const props = defineProps({
   }
 });
 
+// Til debug formål - vis alle data i recipe objektet
+const debug = ref(false);
+
 // Debug log til konsollen
 onMounted(() => {
-  console.log('Recipe data:', props.recipe);
-  console.log('Recipe metadata -', 
-    'time:', props.recipe.time, 
-    'prepTime:', props.recipe.prepTime, 
-    'servings:', props.recipe.servings
-  );
+  console.log('Recipe FULL data:', props.recipe);
 });
 
 // Hjælpefunktion til at hente metadata værdier
 const getMetaValue = (key) => {
-  // Prøv alle mulige veje til at finde metadata
-  if (props.recipe && props.recipe[key] !== undefined && props.recipe[key] !== null) {
-    return props.recipe[key];
+  try {
+    // Prøv først at hente fra _source objektet (her er frontmatter data i Nuxt Content)
+    if (props.recipe && props.recipe._source && props.recipe._source[key] !== undefined) {
+      return props.recipe._source[key];
+    }
+    
+    // Prøv direkte i props
+    if (props.recipe && props.recipe[key] !== undefined && props.recipe[key] !== null) {
+      return props.recipe[key];
+    }
+    
+    // Nuxt Content gemmer metadata i frontmatter objektet
+    if (props.recipe && props.recipe.frontmatter && props.recipe.frontmatter[key] !== undefined) {
+      return props.recipe.frontmatter[key];
+    }
+    
+    // Nogle gange er det direkte i _rawValue
+    if (props.recipe && props.recipe._rawValue && props.recipe._rawValue[key] !== undefined) {
+      return props.recipe._rawValue[key];
+    }
+    
+    // Check om det er i _meta
+    if (props.recipe && props.recipe._meta && props.recipe._meta[key] !== undefined) {
+      return props.recipe._meta[key];
+    }
+    
+    // Hvis det er en Nuxt ref, prøv at få værdien
+    if (props.recipe && props.recipe.value && props.recipe.value[key] !== undefined) {
+      return props.recipe.value[key];
+    }
+    
+    // Fallback værdi
+    return '?';
+  } catch (error) {
+    console.error('Error getting metadata value for:', key, error);
+    return '?';
   }
-  
-  // Se om det findes i frontmatter
-  if (props.recipe && props.recipe.frontmatter && props.recipe.frontmatter[key]) {
-    return props.recipe.frontmatter[key];
-  }
-  
-  // Tjek om det er i _meta
-  if (props.recipe && props.recipe._meta && props.recipe._meta[key]) {
-    return props.recipe._meta[key];
-  }
-  
-  // Fallback værdi
-  return '?';
 };
 
 // Hent ingredienslisten baseret på body elementer
