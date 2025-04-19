@@ -1,20 +1,22 @@
 ---
-title: 'Gammeldags Æblekage'
-description: 'Lun æblekage med makroner og flødeskum – en dansk klassiker.'
+title: Gammeldags Æblekage
+description: Lun æblekage med makroner og flødeskum – en dansk klassiker.
 time: 43
-difficulty: 'Middel'
+difficulty: Middel
 servings: 5
-image: 'https://source.unsplash.com/800x600/?food,13'
-categories: ['Dessert', 'Tradition']
+image: https://source.unsplash.com/800x600/?food,13
+categories:
+  - Dessert
+  - Tradition
 nutrition:
   calories: 445
-  protein: '4g'
-  carbs: '48g'
-  fat: '11g'
-  fiber: '3g'
+  protein: 4g
+  carbs: 48g
+  fat: 11g
+  fiber: 3g
 prepTime: 28
 cookTime: 23
-tips: 'Serveres bedst frisklavet. Kan fryses.'
+tips: Serveres bedst frisklavet. Kan fryses.
 ---
 
 # Gammeldags Æblekage
@@ -23,11 +25,11 @@ Lun æblekage med makroner og flødeskum – en dansk klassiker.
 
 ## Ingredienser
 
-- 200g mel  
-- 2 æg  
-- 100g sukker  
-- 100g smør  
-- 1 tsk bagepulver  
+- 200g mel
+- 2 æg
+- 100g sukker
+- 100g smør
+- 1 tsk bagepulver
 - Evt. krydderier eller smag som passer til retten
 
 ## Fremgangsmåde
