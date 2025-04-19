@@ -1,19 +1,40 @@
 <template>
   <div class="recipe-home">
-    <!-- Hero sektion med forsidetekst -->
+    <!-- Hero sektion med forsidetekst og baggrundsbillede -->
     <div class="hero-section">
-      <div class="hero-content">
-        <ContentDoc path="/" />
+      <!-- Baggrundsbillede i stedet for SVG mønster -->
+      <div class="hero-image">
+        <img src="/almaskoekken.png" alt="Almas Køkken" />
       </div>
-    </div>
-    
-    <!-- Enkelt søgefelt -->
-    <div class="search-container">
-      <input 
-        type="text" 
-        v-model="searchQuery" 
-        placeholder="Søg efter opskrifter..." 
-        class="search-input" />
+      
+      <div class="hero-content">
+        <!-- Integreret søgefelt i hero-sektionen -->
+        <div class="hero-search">
+          <input 
+            type="text" 
+            v-model="searchQuery" 
+            placeholder="Søg efter opskrifter..." 
+            class="search-input" />
+          
+          <!-- Kategorifiltre -->
+          <div class="filter-buttons">
+            <button 
+              class="filter-button" 
+              :class="{ active: selectedCategory === '' }" 
+              @click="selectedCategory = ''">
+              Alle
+            </button>
+            <button 
+              v-for="category in uniqueCategories" 
+              :key="category"
+              class="filter-button"
+              :class="{ active: selectedCategory === category }"
+              @click="selectedCategory = category">
+              {{ category }}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
     
     <!-- Recipe grid med dynamiske opskrifter -->
@@ -60,18 +81,40 @@ import { ref, computed } from 'vue';
 const { data: recipes, pending, error } = await useFetch('/api/recipes');
 
 const searchQuery = ref('');
+const selectedCategory = ref('');
 
-// Filtrér opskrifter baseret på søgning
+// Beregn unikke kategorier fra alle opskrifter
+const uniqueCategories = computed(() => {
+  if (!recipes.value) return [];
+  
+  // Saml alle kategorier fra alle opskrifter
+  const allCategories = [];
+  recipes.value.forEach(recipe => {
+    if (recipe.categories && Array.isArray(recipe.categories)) {
+      allCategories.push(...recipe.categories);
+    }
+  });
+  
+  // Returner unikke kategorier sorteret alfabetisk
+  return [...new Set(allCategories)].sort();
+});
+
+// Filtrér opskrifter baseret på søgning og valgt kategori
 const filteredRecipes = computed(() => {
   if (!recipes.value) return [];
-  if (!searchQuery.value) return recipes.value;
   
-  const query = searchQuery.value.toLowerCase();
-  return recipes.value.filter(recipe => 
-    recipe.title.toLowerCase().includes(query) || 
-    recipe.description.toLowerCase().includes(query) ||
-    (recipe.categories && recipe.categories.some(cat => cat.toLowerCase().includes(query)))
-  );
+  return recipes.value.filter(recipe => {
+    // Filtrer efter søgeord
+    const matchesSearch = !searchQuery.value || 
+      recipe.title.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
+      recipe.description.toLowerCase().includes(searchQuery.value.toLowerCase());
+    
+    // Filtrer efter kategori hvis en er valgt
+    const matchesCategory = !selectedCategory.value || 
+      (recipe.categories && recipe.categories.includes(selectedCategory.value));
+    
+    return matchesSearch && matchesCategory;
+  });
 });
 
 // Hjælper til at generere baggrundsbillede stil
@@ -115,32 +158,43 @@ const getCategoryColor = (categoryClass) => {
 
 .hero-section {
   text-align: center;
-  padding: 60px 0;
+  padding: 0;
   margin-bottom: 30px;
-  background: linear-gradient(135deg, #ffe6ea 0%, #f5c6d6 100%);
   border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  max-height: none;
+  height: auto;
+}
+
+.hero-image {
+  width: 100%;
+  height: auto;
+  position: relative;
+}
+
+.hero-image img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
 }
 
 .hero-content {
+  position: relative;
+  z-index: 2;
   max-width: 800px;
   margin: 0 auto;
+  text-align: center;
+  padding: 20px 30px;
 }
 
-.hero-content h1 {
-  font-size: 2.8rem;
-  margin-bottom: 20px;
-  color: #2c3e50;
-}
-
-.hero-content p {
-  font-size: 1.2rem;
-  line-height: 1.6;
-  color: #555;
-}
-
-.search-container {
-  max-width: 600px;
-  margin: 0 auto 40px;
+.hero-search {
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 .search-input {
@@ -150,7 +204,36 @@ const getCategoryColor = (categoryClass) => {
   border-radius: 30px;
   font-family: 'Lora', serif;
   font-size: 1rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  margin-bottom: 15px;
+}
+
+.filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.filter-button {
+  padding: 8px 16px;
+  background-color: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-button:hover {
+  background-color: #e57373;
+  color: white;
+}
+
+.filter-button.active {
+  background-color: #c62828;
+  color: white;
+  border-color: #c62828;
 }
 
 .recipe-grid {
@@ -206,7 +289,7 @@ const getCategoryColor = (categoryClass) => {
   position: absolute;
   bottom: 10px;
   left: 10px;
-  background-color: rgba(233,30,99,0.8);
+  background-color: #c62828;
   color: white;
   padding: 5px 10px;
   border-radius: 20px;
@@ -272,5 +355,16 @@ const getCategoryColor = (categoryClass) => {
   text-align: center;
   padding: 50px 20px;
   color: #e91e63;
+}
+
+@media (max-width: 768px) {
+  .hero-content {
+    padding: 20px;
+    margin: 0 15px;
+  }
+  
+  .hero-content h1 {
+    font-size: 2rem;
+  }
 }
 </style>

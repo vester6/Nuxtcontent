@@ -88,7 +88,65 @@ const formatRecipeContent = () => {
     <div v-else-if="recipe && !recipe.error" class="recipe-page">
       <!-- Opskriftens header med billede og meta-info -->
       <div class="recipe-header">
-        <div class="recipe-image" :style="{ backgroundImage: `url(${getImage()})` }"></div>
+        <div class="recipe-image" :style="{ backgroundImage: `url(${getImage()})` }">
+          <!-- SVG mønster baggrund -->
+          <div class="pattern-overlay">
+            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="recipe-checkerboard" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
+                  <!-- Row 0 -->
+                  <rect width="20" height="20" x="0" y="0" fill="#c62828"/>
+                  <rect width="20" height="20" x="20" y="0" fill="#e57373"/>
+                  <rect width="20" height="20" x="40" y="0" fill="#c62828"/>
+                  <rect width="20" height="20" x="60" y="0" fill="#e57373"/>
+                  <rect width="20" height="20" x="80" y="0" fill="#c62828"/>
+                  <rect width="20" height="20" x="100" y="0" fill="#e57373"/>
+
+                  <!-- Row 1 -->
+                  <rect width="20" height="20" x="0" y="20" fill="#e57373"/>
+                  <rect width="20" height="20" x="20" y="20" fill="#ffffff"/>
+                  <rect width="20" height="20" x="40" y="20" fill="#e57373"/>
+                  <rect width="20" height="20" x="60" y="20" fill="#ffffff"/>
+                  <rect width="20" height="20" x="80" y="20" fill="#e57373"/>
+                  <rect width="20" height="20" x="100" y="20" fill="#ffffff"/>
+
+                  <!-- Row 2 -->
+                  <rect width="20" height="20" x="0" y="40" fill="#c62828"/>
+                  <rect width="20" height="20" x="20" y="40" fill="#e57373"/>
+                  <rect width="20" height="20" x="40" y="40" fill="#c62828"/>
+                  <rect width="20" height="20" x="60" y="40" fill="#e57373"/>
+                  <rect width="20" height="20" x="80" y="40" fill="#c62828"/>
+                  <rect width="20" height="20" x="100" y="40" fill="#e57373"/>
+
+                  <!-- Row 3 -->
+                  <rect width="20" height="20" x="0" y="60" fill="#e57373"/>
+                  <rect width="20" height="20" x="20" y="60" fill="#ffffff"/>
+                  <rect width="20" height="20" x="40" y="60" fill="#e57373"/>
+                  <rect width="20" height="20" x="60" y="60" fill="#ffffff"/>
+                  <rect width="20" height="20" x="80" y="60" fill="#e57373"/>
+                  <rect width="20" height="20" x="100" y="60" fill="#ffffff"/>
+
+                  <!-- Row 4 -->
+                  <rect width="20" height="20" x="0" y="80" fill="#c62828"/>
+                  <rect width="20" height="20" x="20" y="80" fill="#e57373"/>
+                  <rect width="20" height="20" x="40" y="80" fill="#c62828"/>
+                  <rect width="20" height="20" x="60" y="80" fill="#e57373"/>
+                  <rect width="20" height="20" x="80" y="80" fill="#c62828"/>
+                  <rect width="20" height="20" x="100" y="80" fill="#e57373"/>
+
+                  <!-- Row 5 -->
+                  <rect width="20" height="20" x="0" y="100" fill="#e57373"/>
+                  <rect width="20" height="20" x="20" y="100" fill="#ffffff"/>
+                  <rect width="20" height="20" x="40" y="100" fill="#e57373"/>
+                  <rect width="20" height="20" x="60" y="100" fill="#ffffff"/>
+                  <rect width="20" height="20" x="80" y="100" fill="#e57373"/>
+                  <rect width="20" height="20" x="100" y="100" fill="#ffffff"/>
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#recipe-checkerboard)" />
+            </svg>
+          </div>
+        </div>
         <div class="recipe-header-content">
           <h1>{{ recipe.title }}</h1>
           <p class="recipe-description">{{ recipe.description }}</p>
@@ -140,7 +198,13 @@ const formatRecipeContent = () => {
         </div>
       </div>
 
-      <!-- Tilbage-knap til forsiden -->
+      <!-- Relaterede opskrifter sektion -->
+      <RelatedRecipes 
+        :current-recipe="recipe" 
+        :current-slug="`/opskrifter/${name}`"
+      />
+      
+      <!-- Tilbage til forsiden -->
       <div class="button-container">
         <a href="/" class="back-button">Tilbage til forsiden</a>
       </div>
@@ -193,10 +257,30 @@ const formatRecipeContent = () => {
 }
 
 .recipe-image {
-  width: 100%;
-  height: 300px;
+  height: 280px;
   background-size: cover;
   background-position: center;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.pattern-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  opacity: 0.3;
+  mix-blend-mode: multiply;
+}
+
+.pattern-overlay svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .recipe-header-content {
@@ -242,6 +326,15 @@ const formatRecipeContent = () => {
   line-height: 1.8;
 }
 
+.recipe-content h2 {
+  font-size: 1.6rem;
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #c62828;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
+}
+
 /* To-kolonne layout */
 .recipe-columns {
   display: grid;
@@ -251,15 +344,6 @@ const formatRecipeContent = () => {
 
 .recipe-ingredients {
   padding-right: 20px;
-}
-
-.recipe-ingredients h2,
-.recipe-instructions h2 {
-  font-size: 1.8rem;
-  margin: 0 0 20px;
-  color: #e91e63;
-  border-bottom: 2px solid #f5c6d6;
-  padding-bottom: 10px;
 }
 
 .recipe-ingredients ul {
@@ -303,20 +387,34 @@ const formatRecipeContent = () => {
   text-align: center;
 }
 
-.back-button, .back-link {
+.back-button {
   display: inline-block;
-  padding: 12px 24px;
-  background-color: #e91e63;
+  padding: 10px 20px;
+  margin-top: 20px;
+  background-color: #c62828;
   color: white;
   text-decoration: none;
-  border-radius: 6px;
-  font-weight: 500;
-  transition: background-color 0.3s;
-  box-shadow: 0 3px 8px rgba(233, 30, 99, 0.3);
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
 }
 
-.back-button:hover, .back-link:hover {
-  background-color: #c2185b;
+.back-button:hover {
+  background-color: #e57373;
+}
+
+.back-link {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: #c62828;
+  color: white;
+  text-decoration: none;
+  border-radius: 30px;
+  font-weight: 500;
+  box-shadow: 0 3px 8px rgba(198, 40, 40, 0.3);
+}
+
+.back-link:hover {
+  background-color: #e57373;
 }
 
 .error-container {

@@ -4,7 +4,7 @@ description: 'Lag af creme, bær og kage gør denne trifli perfekt til sommerens
 time: 45
 difficulty: 'Nem'
 servings: 8
-image: 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
+image: '/sommerTrifli.png'
 categories: ['Dessert', 'Sommer']
 nutrition:
   calories: 290
