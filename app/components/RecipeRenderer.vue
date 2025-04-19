@@ -8,8 +8,8 @@
         </svg>
       </div>
       <!-- Billedet tilføjes her -->
-      <div class="recipe-image" v-if="getMetaValue('image')">
-        <img :src="getMetaValue('image')" :alt="recipe.title">
+      <div class="recipe-image" v-if="getImage()">
+        <img :src="getImage()" :alt="recipe.title">
       </div>
       <h1>{{ recipe.title }}</h1>
       <pre v-if="debug">{{ JSON.stringify(recipe, null, 2) }}</pre>
@@ -130,6 +130,35 @@ const getMetaValue = (key) => {
     console.error('Error getting metadata value:', error);
     return '?';
   }
+};
+
+// Hent billedet baseret på metadata
+const getImage = () => {
+  const imagePath = getMetaValue('image');
+  
+  // Hvis der ikke er noget billede, returner undefined
+  if (!imagePath) return undefined;
+  
+  // Hvis billedet allerede er en komplet URL (starter med http/https)
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    // For Unsplash URLs, brug deres API med vores egen API key for at undgå blokeringer
+    if (imagePath.includes('unsplash.com')) {
+      // Fjern query parametre for at undgå problemer
+      let baseUrl = imagePath;
+      if (baseUrl.includes('?')) {
+        baseUrl = baseUrl.split('?')[0];
+      }
+      
+      // Returner en fallback billede URL
+      return 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?q=80&w=800&auto=format&fit=crop';
+    }
+    
+    // Andre eksterne billeder returneres direkte
+    return imagePath;
+  }
+  
+  // Hvis det er et lokalt billede (uden http/https), antag at det er i /public/images
+  return `/images/${imagePath.replace(/^\//, '')}`;
 };
 
 // Hent ingredienslisten baseret på body elementer
