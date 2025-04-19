@@ -235,39 +235,6 @@ const loadMealPlan = () => {
   }
 };
 
-// Simpel parsefunktion til at udtrække ingredienser fra opskriftstekster
-// Dette er en meget simpel demo-version - en reel implementation ville bruge NLP
-const parseIngredients = (recipe) => {
-  if (!recipe.content) return [];
-  
-  const ingredients = [];
-  const lines = recipe.content.split('\n');
-  
-  // Søg efter linjer der ligner ingredienser (starter med - eller *)
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
-      // Forsøg at parsere mængde og navn
-      const ingredientText = trimmed.substring(1).trim();
-      const match = ingredientText.match(/^([\d\s,./]+)?\s*([a-zæøåA-ZÆØÅ].+)$/);
-      
-      if (match) {
-        const amount = match[1] ? match[1].trim() : '';
-        const name = match[2].trim();
-        
-        ingredients.push({
-          name,
-          amount,
-          checked: false,
-          recipe: recipe.title
-        });
-      }
-    }
-  }
-  
-  return ingredients;
-};
-
 // Opdater indkøbsliste baseret på valgte opskrifter
 const updateShoppingList = async () => {
   // Nulstil indkøbsliste
@@ -279,33 +246,85 @@ const updateShoppingList = async () => {
     
     // For hvert måltid på den dag
     for (const meal of meals) {
-      // Hent detaljeret opskrift hvis vi ikke har indholdet
-      if (!meal.content) {
-        const { data } = await useFetch(`/api/recipe?name=${meal.slug.split('/').pop()}`);
-        if (data.value) {
+      try {
+        // Hent detaljeret opskrift direkte med fetch for at undgå composable-problemer
+        const response = await fetch(`/api/recipe?name=${meal.slug.split('/').pop()}`);
+        const data = await response.json();
+        
+        if (data) {
+          console.log("Fetched recipe data:", data);
+          
           // Opdater madplanen med det fulde indhold
           const mealIndex = mealPlan.value[dayId].findIndex(m => m.id === meal.id);
           if (mealIndex !== -1) {
             mealPlan.value[dayId][mealIndex] = { 
               ...mealPlan.value[dayId][mealIndex], 
-              content: data.value.content 
+              content: data.content 
             };
           }
           
           // Parse ingredienser og tilføj til indkøbslisten
-          const ingredients = parseIngredients(data.value);
+          const ingredients = parseIngredients(data);
           mergeIngredients(ingredients);
         }
-      } else {
-        // Parse ingredienser fra indhold vi allerede har
-        const ingredients = parseIngredients(meal);
-        mergeIngredients(ingredients);
+      } catch (error) {
+        console.error("Error fetching recipe:", error);
       }
     }
   }
   
   // Gem indkøbslisten i localStorage
   saveShoppingList();
+};
+
+// Simpel parsefunktion til at udtrække ingredienser fra opskriftstekster
+const parseIngredients = (recipe) => {
+  if (!recipe || !recipe.content) {
+    console.log("No content to parse ingredients from:", recipe);
+    return [];
+  }
+  
+  console.log("Parsing ingredients from:", recipe.content);
+  
+  const ingredients = [];
+  const lines = recipe.content.split('\n');
+  
+  let inIngredientsSection = false;
+  
+  // Søg efter linjer der ligner ingredienser
+  for (const line of lines) {
+    const trimmed = line.trim();
+    
+    // Check om vi er i ingrediens-sektionen
+    if (trimmed.includes('# Ingredienser') || trimmed.includes('## Ingredienser')) {
+      inIngredientsSection = true;
+      continue;
+    }
+    
+    // Check om vi har forladt ingrediens-sektionen
+    if (inIngredientsSection && trimmed.startsWith('#')) {
+      inIngredientsSection = false;
+      continue;
+    }
+    
+    // Hvis vi er i ingrediens-sektionen og linjen starter med - eller *
+    if (inIngredientsSection && (trimmed.startsWith('-') || trimmed.startsWith('*'))) {
+      // Forsøg at parsere mængde og navn
+      const ingredientText = trimmed.substring(1).trim();
+      
+      ingredients.push({
+        name: ingredientText,
+        amount: '1',
+        checked: false,
+        recipe: recipe.title || 'Ukendt opskrift'
+      });
+      
+      console.log("Added ingredient:", ingredientText);
+    }
+  }
+  
+  console.log("Found ingredients:", ingredients);
+  return ingredients;
 };
 
 // Kombinér ingredienser (saml ens ingredienser)
