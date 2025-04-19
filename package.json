@@ -13,5 +13,8 @@
     "@nuxt/content": "^3.4.0",
     "markdown-it": "^14.1.0",
     "nuxt": "^3.16.2"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.9.1"
   }
 }

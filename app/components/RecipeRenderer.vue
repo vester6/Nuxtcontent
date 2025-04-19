@@ -7,6 +7,10 @@
           <path d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z"/>
         </svg>
       </div>
+      <!-- Billedet tilføjes her -->
+      <div class="recipe-image" v-if="getMetaValue('image')">
+        <img :src="getMetaValue('image')" :alt="recipe.title">
+      </div>
       <h1>{{ recipe.title }}</h1>
       <pre v-if="debug">{{ JSON.stringify(recipe, null, 2) }}</pre>
       <div class="recipe-meta">
@@ -314,185 +318,161 @@ function getTextFromNode(node) {
 }
 </script>
 
-<style>
+<style scoped>
 .recipe-container {
-  max-width: 1000px;
+  max-width: 900px;
   margin: 0 auto;
-  font-family: Arial, sans-serif;
-  background-color: #f9e9e9;
-  padding: 40px 30px;
-  color: #333;
+  padding: 20px;
+  background-color: #faecf2;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .recipe-header {
   text-align: center;
-  margin-bottom: 50px;
+  margin-bottom: 30px;
 }
 
 .recipe-icon {
+  display: flex;
+  justify-content: center;
   margin-bottom: 15px;
 }
 
-.recipe-header h1 {
-  font-size: 2.2rem;
-  font-weight: 500;
-  margin-bottom: 20px;
-  color: #333;
+/* Styling til billedet */
+.recipe-image {
+  margin: 20px auto;
+  max-width: 600px;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.recipe-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.recipe-image img:hover {
+  transform: scale(1.02);
 }
 
 .recipe-meta {
   display: flex;
   justify-content: center;
-  gap: 30px;
-  font-size: 15px;
+  gap: 20px;
+  margin-top: 15px;
+  font-size: 16px;
   color: #555;
-  margin-bottom: 25px;
 }
 
 .recipe-meta span {
-  white-space: nowrap;
+  background-color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .recipe-content {
-  position: relative;
+  margin-top: 30px;
 }
 
-/* Styling af overskrifter over kolonnerne */
 .recipe-headings {
   display: flex;
+  justify-content: space-between;
   margin-bottom: 20px;
 }
 
-.ingredients-heading {
-  flex: 1;
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ddd;
+.ingredients-heading, .steps-heading {
+  width: 48%;
+  text-align: center;
+  font-size: 1.5rem;
   color: #333;
-  margin-right: 40px;
+  margin-top: 0;
+  margin-bottom: 15px;
 }
 
-.steps-heading {
-  flex: 1;
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ddd;
-  color: #333;
-}
-
-/* Styling for manuelt renderet indhold */
 .structured-content {
   display: flex;
+  gap: 4%;
 }
 
-.ingredients-content {
-  flex: 1;
-  border-right: 1px solid #ddd;
-  padding-right: 40px;
-  margin-right: 40px;
+.ingredients-content, .steps-content {
+  width: 48%;
 }
 
-.steps-content {
-  flex: 1;
-}
-
-/* Styling for lister */
 .ingredients-content ul {
   list-style-type: none;
-  padding-left: 0;
-  margin: 0;
+  padding-left: 5px;
 }
 
-.ingredients-content li {
-  margin-bottom: 10px;
-  line-height: 1.5;
+.ingredients-content ul li {
   position: relative;
   padding-left: 20px;
+  margin-bottom: 10px;
 }
 
-.ingredients-content li::before {
+.ingredients-content ul li::before {
   content: "•";
   position: absolute;
   left: 0;
-  color: #666;
-  font-size: 18px;
+  color: #e91e63;
+  font-weight: bold;
 }
 
 .steps-content ol {
-  counter-reset: step-counter;
-  list-style-type: none;
-  padding-left: 0;
-  margin: 0;
+  padding-left: 25px;
 }
 
-.steps-content li {
-  margin-bottom: 10px;
-  line-height: 1.5;
-  position: relative;
-  padding-left: 30px;
-}
-
-.steps-content li::before {
-  content: counter(step-counter) ".";
-  counter-increment: step-counter;
-  position: absolute;
-  left: 0;
-  font-weight: bold;
-  color: #444;
+.steps-content ol li {
+  margin-bottom: 15px;
 }
 
 .recipe-tips {
   margin-top: 30px;
   padding: 15px;
-  background: #efefef;
-  border-radius: 4px;
+  background-color: #fff;
+  border-radius: 8px;
+  border-left: 4px solid #e91e63;
 }
 
-.recipe-tips h3 {
-  font-size: 1.1rem;
-  margin-bottom: 10px;
-}
-
+/* Mobile responsiveness */
 @media (max-width: 768px) {
   .recipe-meta {
     flex-direction: column;
-    gap: 5px;
+    gap: 10px;
   }
   
   .recipe-headings {
     flex-direction: column;
   }
   
-  .ingredients-heading {
-    margin-right: 0;
-    margin-bottom: 10px;
+  .ingredients-heading, .steps-heading {
+    width: 100%;
   }
   
   .steps-heading {
-    margin-top: 30px; /* Tilføjet margin for at sikre adskillelse */
+    margin-top: 30px;
   }
   
   .structured-content {
     flex-direction: column;
   }
   
-  .ingredients-content {
-    border-right: none;
-    border-bottom: 1px solid #ddd;
-    padding-right: 0;
-    padding-bottom: 20px;
-    margin-bottom: 20px;
-    margin-right: 0;
-    width: 100%; /* Sikrer at ingredienslisten fylder hele bredden */
+  .ingredients-content, .steps-content {
+    width: 100%;
   }
   
   .steps-content {
-    width: 100%;
-    clear: both; /* Sikrer at den starter på en ny linje */
+    margin-top: 30px;
+    clear: both;
+  }
+  
+  /* Forbedr mobile billede visning */
+  .recipe-image {
+    max-width: 100%;
   }
 }
 </style>
