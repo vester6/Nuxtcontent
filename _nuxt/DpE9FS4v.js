@@ -1,1 +1,0 @@
-import{l as a,f as s,k as r,a7 as t}from"./DtFMEr3l.js";const n={};function o(e,c){return r(),s("thead",null,[t(e.$slots,"default")])}const _=Object.assign(a(n,[["render",o]]),{__name:"ProseThead"});export{_ as default};
