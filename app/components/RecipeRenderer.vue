@@ -9,9 +9,9 @@
       </div>
       <h1>{{ recipe.title }}</h1>
       <div class="recipe-meta">
-        <span>Tid i alt {{ recipe.time || '?' }} min.</span>
-        <span>Arbejdstid {{ recipe.prepTime || '?' }} min.</span>
-        <span>Antal {{ recipe.servings || '?' }} pers.</span>
+        <span>Tid i alt {{ getMetaValue('time') }} min.</span>
+        <span>Arbejdstid {{ getMetaValue('prepTime') }} min.</span>
+        <span>Antal {{ getMetaValue('servings') }} pers.</span>
       </div>
     </div>
     
@@ -39,15 +39,15 @@
     </div>
     
     <!-- Tips (hvis der er nogen) -->
-    <div v-if="recipe.tips" class="recipe-tips">
+    <div v-if="getMetaValue('tips')" class="recipe-tips">
       <h3>Tips</h3>
-      <p>{{ recipe.tips }}</p>
+      <p>{{ getMetaValue('tips') }}</p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { defineProps, computed } from 'vue';
+import { defineProps, computed, onMounted } from 'vue';
 
 const props = defineProps({
   recipe: {
@@ -55,6 +55,37 @@ const props = defineProps({
     required: true
   }
 });
+
+// Debug log til konsollen
+onMounted(() => {
+  console.log('Recipe data:', props.recipe);
+  console.log('Recipe metadata -', 
+    'time:', props.recipe.time, 
+    'prepTime:', props.recipe.prepTime, 
+    'servings:', props.recipe.servings
+  );
+});
+
+// Hjælpefunktion til at hente metadata værdier
+const getMetaValue = (key) => {
+  // Prøv alle mulige veje til at finde metadata
+  if (props.recipe && props.recipe[key] !== undefined && props.recipe[key] !== null) {
+    return props.recipe[key];
+  }
+  
+  // Se om det findes i frontmatter
+  if (props.recipe && props.recipe.frontmatter && props.recipe.frontmatter[key]) {
+    return props.recipe.frontmatter[key];
+  }
+  
+  // Tjek om det er i _meta
+  if (props.recipe && props.recipe._meta && props.recipe._meta[key]) {
+    return props.recipe._meta[key];
+  }
+  
+  // Fallback værdi
+  return '?';
+};
 
 // Hent ingredienslisten baseret på body elementer
 const getIngredientsList = () => {
