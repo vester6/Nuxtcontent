@@ -1,22 +1,15 @@
 <template>
   <div class="recipe-container">
-    <!-- Header -->
-    <div class="recipe-header">
-      <div class="recipe-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#2c3e50">
-          <path d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z"/>
-        </svg>
-      </div>
-      <!-- Billedet tilføjes her -->
-      <div class="recipe-image" v-if="getImage()">
-        <img :src="getImage()" :alt="recipe.title">
-      </div>
-      <h1>{{ recipe.title }}</h1>
-      <pre v-if="debug">{{ JSON.stringify(recipe, null, 2) }}</pre>
-      <div class="recipe-meta">
-        <span>Tid i alt {{ getMetaValue('time') }} min.</span>
-        <span>Arbejdstid {{ getMetaValue('prepTime') }} min.</span>
-        <span>Antal {{ getMetaValue('servings') }} pers.</span>
+    <!-- Header med info og baggrund -->
+    <div class="recipe-header-container">
+      <div class="header-background"></div>
+      <div class="recipe-header-content">
+        <h1>{{ recipe.title }}</h1>
+        <div class="recipe-meta">
+          <span>Tid i alt {{ getMetaValue('time') }} min.</span>
+          <span>Arbejdstid {{ getMetaValue('prepTime') }} min.</span>
+          <span>Antal {{ getMetaValue('servings') }} pers.</span>
+        </div>
       </div>
     </div>
     
@@ -130,35 +123,6 @@ const getMetaValue = (key) => {
     console.error('Error getting metadata value:', error);
     return '?';
   }
-};
-
-// Hent billedet baseret på metadata
-const getImage = () => {
-  const imagePath = getMetaValue('image');
-  
-  // Hvis der ikke er noget billede, returner undefined
-  if (!imagePath) return undefined;
-  
-  // Hvis billedet allerede er en komplet URL (starter med http/https)
-  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-    // For Unsplash URLs, brug deres API med vores egen API key for at undgå blokeringer
-    if (imagePath.includes('unsplash.com')) {
-      // Fjern query parametre for at undgå problemer
-      let baseUrl = imagePath;
-      if (baseUrl.includes('?')) {
-        baseUrl = baseUrl.split('?')[0];
-      }
-      
-      // Returner en fallback billede URL
-      return 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?q=80&w=800&auto=format&fit=crop';
-    }
-    
-    // Andre eksterne billeder returneres direkte
-    return imagePath;
-  }
-  
-  // Hvis det er et lokalt billede (uden http/https), antag at det er i /public/images
-  return `/images/${imagePath.replace(/^\//, '')}`;
 };
 
 // Hent ingredienslisten baseret på body elementer
@@ -351,41 +315,49 @@ function getTextFromNode(node) {
 .recipe-container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 20px;
   background-color: #faecf2;
+  font-family: 'Lora', serif;
+  overflow: hidden;
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.recipe-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.recipe-icon {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 15px;
-}
-
-/* Styling til billedet */
-.recipe-image {
-  margin: 20px auto;
-  max-width: 600px;
-  overflow: hidden;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.recipe-image img {
+/* Ny header container */
+.recipe-header-container {
+  position: relative;
   width: 100%;
-  height: auto;
-  display: block;
-  transition: transform 0.3s ease;
+  height: 200px;
+  margin-bottom: 20px;
+  overflow: hidden;
 }
 
-.recipe-image img:hover {
-  transform: scale(1.02);
+.header-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #ffe6ea 0%, #f5c6d6 100%);
+}
+
+.recipe-header-content {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  transform: translateY(-50%);
+  z-index: 2;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.recipe-header-content h1 {
+  font-family: 'Lora', serif;
+  font-weight: 600;
+  font-size: 2.5rem;
+  margin: 0.5em 0;
+  color: #2c3e50;
+  text-shadow: 0px 1px 3px rgba(255, 255, 255, 0.8);
 }
 
 .recipe-meta {
@@ -394,18 +366,20 @@ function getTextFromNode(node) {
   gap: 20px;
   margin-top: 15px;
   font-size: 16px;
-  color: #555;
+  color: #333;
 }
 
 .recipe-meta span {
-  background-color: #fff;
+  background-color: rgba(255, 255, 255, 0.7);
   padding: 5px 10px;
   border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-family: 'Lora', serif;
+  font-style: italic;
 }
 
 .recipe-content {
   margin-top: 30px;
+  padding: 0 20px 20px;
 }
 
 .recipe-headings {
@@ -417,10 +391,12 @@ function getTextFromNode(node) {
 .ingredients-heading, .steps-heading {
   width: 48%;
   text-align: center;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   color: #333;
   margin-top: 0;
   margin-bottom: 15px;
+  font-family: 'Lora', serif;
+  font-weight: 600;
 }
 
 .structured-content {
@@ -441,6 +417,8 @@ function getTextFromNode(node) {
   position: relative;
   padding-left: 20px;
   margin-bottom: 10px;
+  font-family: 'Lora', serif;
+  font-size: 1.05rem;
 }
 
 .ingredients-content ul li::before {
@@ -457,21 +435,35 @@ function getTextFromNode(node) {
 
 .steps-content ol li {
   margin-bottom: 15px;
+  font-family: 'Lora', serif;
+  font-size: 1.05rem;
 }
 
 .recipe-tips {
-  margin-top: 30px;
+  margin: 30px 20px;
   padding: 15px;
   background-color: #fff;
   border-radius: 8px;
   border-left: 4px solid #e91e63;
 }
 
+.recipe-tips h3 {
+  font-family: 'Lora', serif;
+  font-weight: 600;
+  color: #333;
+  margin-top: 0;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
+  .recipe-header-content h1 {
+    font-size: 2rem;
+  }
+  
   .recipe-meta {
     flex-direction: column;
     gap: 10px;
+    align-items: center;
   }
   
   .recipe-headings {
@@ -497,11 +489,6 @@ function getTextFromNode(node) {
   .steps-content {
     margin-top: 30px;
     clear: both;
-  }
-  
-  /* Forbedr mobile billede visning */
-  .recipe-image {
-    max-width: 100%;
   }
 }
 </style>

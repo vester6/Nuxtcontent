@@ -1,8 +1,6 @@
-# Welcome to Nuxt Content Starter
+# Mine Favoritopskrifter
 
-This is the main page displaying Markdown located at [content/index.md](https://github.com/nuxt/starter/blob/content/content/index.md).
-
-Move to [about](/about) page.
+En samling af lækre opskrifter til enhver lejlighed - fra traditionel dansk mad til internationale specialiteter.
 
 ## Manage your Contents
 

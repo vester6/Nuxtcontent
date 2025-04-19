@@ -4,7 +4,7 @@ description: 'Langtidssimret lammeret med aromatiske krydderier.'
 time: 37
 difficulty: 'Middel'
 servings: 5
-image: 'https://source.unsplash.com/800x600/?indian-food,7'
+image: '/rogan-josh.png'
 categories: ['Aftensmad', 'Indisk']
 nutrition:
   calories: 335
