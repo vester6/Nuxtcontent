@@ -1,1 +1,0 @@
-import{l as s,f as r,k as n,a3 as o}from"./Dg509LHU.js";const t={};function a(e,l){return n(),r("ul",null,[o(e.$slots,"default")])}const _=Object.assign(s(t,[["render",a]]),{__name:"ProseUl"});export{_ as default};
