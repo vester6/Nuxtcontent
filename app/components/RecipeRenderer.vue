@@ -9,9 +9,9 @@
       </div>
       <h1>{{ recipe.title }}</h1>
       <div class="recipe-meta">
-        <span>Tid i alt {{ recipe.time }} min.</span>
-        <span>Arbejdstid {{ recipe.prepTime }} min.</span>
-        <span>Antal {{ recipe.servings }} pers.</span>
+        <span>Tid i alt {{ recipe.time || '?' }} min.</span>
+        <span>Arbejdstid {{ recipe.prepTime || '?' }} min.</span>
+        <span>Antal {{ recipe.servings || '?' }} pers.</span>
       </div>
     </div>
     
