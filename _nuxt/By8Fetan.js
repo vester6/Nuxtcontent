@@ -1,0 +1,1 @@
+import{l as o,f as s,k as r,a7 as n}from"./DtFMEr3l.js";const t={};function a(e,c){return r(),s("code",null,[n(e.$slots,"default")])}const _=Object.assign(o(t,[["render",a]]),{__name:"ProseCode"});export{_ as default};
