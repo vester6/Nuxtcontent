@@ -163,7 +163,7 @@ const getCategoryColor = (categoryClass) => {
   border-radius: 12px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 15px var(--color-card-shadow);
   max-height: none;
   height: auto;
 }
@@ -191,20 +191,22 @@ const getCategoryColor = (categoryClass) => {
 }
 
 .hero-search {
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: var(--color-card-background);
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 15px var(--color-card-shadow);
 }
 
 .search-input {
   width: 100%;
   padding: 12px 20px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-input-border);
   border-radius: 30px;
   font-family: 'Lora', serif;
   font-size: 1rem;
   margin-bottom: 15px;
+  background-color: var(--color-input-background);
+  color: var(--color-text);
 }
 
 .filter-buttons {
@@ -217,23 +219,24 @@ const getCategoryColor = (categoryClass) => {
 
 .filter-button {
   padding: 8px 16px;
-  background-color: #f8f8f8;
-  border: 1px solid #ddd;
+  background-color: var(--color-background-tertiary);
+  border: 1px solid var(--color-border);
   border-radius: 20px;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  color: var(--color-text);
 }
 
 .filter-button:hover {
-  background-color: #e57373;
+  background-color: var(--color-primary-light);
   color: white;
 }
 
 .filter-button.active {
-  background-color: #c62828;
+  background-color: var(--color-primary);
   color: white;
-  border-color: #c62828;
+  border-color: var(--color-primary);
 }
 
 .recipe-grid {
@@ -255,16 +258,16 @@ const getCategoryColor = (categoryClass) => {
   height: 100%;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 15px var(--color-card-shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  background: white;
+  background: var(--color-card-background);
   text-decoration: none;
   color: inherit;
 }
 
 .recipe-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  box-shadow: 0 10px 25px var(--color-card-shadow);
 }
 
 .recipe-card-image {
@@ -278,7 +281,7 @@ const getCategoryColor = (categoryClass) => {
   position: absolute;
   top: 10px;
   right: 10px;
-  background-color: rgba(0,0,0,0.6);
+  background-color: var(--color-badge-background);
   color: white;
   padding: 5px 10px;
   border-radius: 20px;
@@ -289,7 +292,7 @@ const getCategoryColor = (categoryClass) => {
   position: absolute;
   bottom: 10px;
   left: 10px;
-  background-color: #c62828;
+  background-color: var(--color-primary);
   color: white;
   padding: 5px 10px;
   border-radius: 20px;
@@ -307,11 +310,11 @@ const getCategoryColor = (categoryClass) => {
 .recipe-card-content h3 {
   margin: 0 0 10px;
   font-size: 1.2rem;
-  color: #333;
+  color: var(--color-text);
 }
 
 .description {
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 0.9rem;
   margin-bottom: 15px;
   line-height: 1.5;
@@ -321,7 +324,7 @@ const getCategoryColor = (categoryClass) => {
 .recipe-meta {
   display: flex;
   justify-content: space-between;
-  color: #888;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
   margin-top: auto;
 }

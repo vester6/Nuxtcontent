@@ -119,13 +119,13 @@ const getCategoryColor = (categoryClass) => {
   margin-top: 60px;
   margin-bottom: 40px;
   padding-top: 30px;
-  border-top: 2px dashed #eee;
+  border-top: 2px dashed var(--color-border);
 }
 
 .related-title {
   font-size: 1.8rem;
   margin-bottom: 25px;
-  color: #333;
+  color: var(--color-text);
   text-align: center;
 }
 
@@ -147,16 +147,16 @@ const getCategoryColor = (categoryClass) => {
   height: 100%;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 15px var(--color-card-shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  background: white;
+  background: var(--color-card-background);
   text-decoration: none;
   color: inherit;
 }
 
 .recipe-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  box-shadow: 0 10px 25px var(--color-card-shadow);
 }
 
 .recipe-card-image {
@@ -170,7 +170,7 @@ const getCategoryColor = (categoryClass) => {
   position: absolute;
   top: 10px;
   right: 10px;
-  background-color: rgba(0,0,0,0.6);
+  background-color: var(--color-badge-background);
   color: white;
   padding: 5px 10px;
   border-radius: 20px;
@@ -181,7 +181,7 @@ const getCategoryColor = (categoryClass) => {
   position: absolute;
   bottom: 10px;
   left: 10px;
-  background-color: #c62828; /* Matcher farverne fra forsiden */
+  background-color: var(--color-primary);
   color: white;
   padding: 5px 10px;
   border-radius: 20px;
@@ -199,11 +199,11 @@ const getCategoryColor = (categoryClass) => {
 .recipe-card-content h3 {
   margin: 0 0 10px;
   font-size: 1.1rem;
-  color: #333;
+  color: var(--color-text);
 }
 
 .description {
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 0.85rem;
   margin-bottom: 12px;
   line-height: 1.5;
@@ -218,7 +218,7 @@ const getCategoryColor = (categoryClass) => {
 .recipe-meta {
   display: flex;
   justify-content: space-between;
-  color: #888;
+  color: var(--color-text-muted);
   font-size: 0.8rem;
   margin-top: auto;
 }

@@ -1,0 +1,56 @@
+/* Default light theme */
+:root {
+  --color-background: #ffffff;
+  --color-background-secondary: #f9f9f9;
+  --color-background-tertiary: #f0f0f0;
+  --color-text: #333333;
+  --color-text-secondary: #666666;
+  --color-text-muted: #888888;
+  --color-border: #e0e0e0;
+  --color-primary: #c62828;
+  --color-primary-light: #e57373;
+  --color-primary-dark: #8e0000;
+  --color-primary-muted: rgba(198, 40, 40, 0.2);
+  --color-card-background: #ffffff;
+  --color-card-shadow: rgba(0, 0, 0, 0.1);
+  --color-input-background: #ffffff;
+  --color-input-border: #dddddd;
+  --color-header-text: #ffffff;
+  --color-badge-background: rgba(0, 0, 0, 0.6);
+  --color-link: #c62828;
+  --color-hover: #e57373;
+}
+
+/* Dark theme */
+.dark-theme {
+  --color-background: #1a1a1a;
+  --color-background-secondary: #2a2a2a;
+  --color-background-tertiary: #333333;
+  --color-text: #f0f0f0;
+  --color-text-secondary: #cccccc;
+  --color-text-muted: #999999;
+  --color-border: #444444;
+  --color-primary: #ef5350;
+  --color-primary-light: #ff867c;
+  --color-primary-dark: #b61827;
+  --color-primary-muted: rgba(239, 83, 80, 0.2);
+  --color-card-background: #2a2a2a;
+  --color-card-shadow: rgba(0, 0, 0, 0.3);
+  --color-input-background: #333333;
+  --color-input-border: #444444;
+  --color-header-text: #f0f0f0;
+  --color-badge-background: rgba(0, 0, 0, 0.7);
+  --color-link: #ef5350;
+  --color-hover: #ff867c;
+}
+
+/* Smooth transitions when switching themes */
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+button, a, input, select, textarea, 
+.recipe-card, .recipe-card-image, .category-badge,
+.filter-button, .back-button, .day-column, .meal-dropzone {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
