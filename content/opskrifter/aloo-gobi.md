@@ -4,7 +4,7 @@ description: Kartofler og blomkål i aromatiske krydderier.
 time: 35
 difficulty: Middel
 servings: 6
-image: https://source.unsplash.com/800x600/?indian-food,5
+image: /aloo.png
 categories:
   - Vegetar
   - Indisk

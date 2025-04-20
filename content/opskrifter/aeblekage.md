@@ -4,7 +4,7 @@ description: Lun æblekage med makroner og flødeskum – en dansk klassiker.
 time: 43
 difficulty: Middel
 servings: 5
-image: https://source.unsplash.com/800x600/?food,13
+image: /aeblekage.png
 categories:
   - Dessert
   - Tradition

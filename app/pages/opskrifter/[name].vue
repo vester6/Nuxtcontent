@@ -89,8 +89,8 @@ const formatRecipeContent = () => {
       <!-- Opskriftens header med billede og meta-info -->
       <div class="recipe-header">
         <div class="recipe-image" :style="{ backgroundImage: `url(${getImage()})` }">
-          <!-- SVG mønster baggrund -->
-          <div class="pattern-overlay">
+          <!-- SVG mønster baggrund kun hvis der ikke er et billede -->
+          <div v-if="!recipe || !recipe.image || recipe.image === ''" class="pattern-overlay">
             <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <pattern id="recipe-checkerboard" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">

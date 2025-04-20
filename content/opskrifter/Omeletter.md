@@ -1,3 +1,22 @@
+---
+title: 'Omeletter'
+description: 'En dejlig omelet'
+time: 18
+difficulty: 'Let'
+servings: 6
+image: 'https://source.unsplash.com/800x600/?indian-food,38'
+categories: ['Brød', 'Indisk']
+nutrition:
+  calories: 490
+  protein: '7g'
+  carbs: '58g'
+  fat: '18g'
+  fiber: '5g'
+prepTime: 12
+cookTime: 6
+tips: 'Prøv med masser af bacon'
+---
+
 # Omeletter
 
 En dejlig omelet

@@ -47,7 +47,7 @@
             <div v-for="item in category" :key="item.name" class="shopping-item">
               <label class="item-label">
                 <input type="checkbox" v-model="item.checked" />
-                <span :class="{ 'checked': item.checked }">{{ item.name }} ({{ item.amount }})</span>
+                <span :class="{ 'checked': item.checked }">{{ item.name }} {{ item.amount ? `(${item.amount})` : '' }}</span>
               </label>
             </div>
           </div>
@@ -91,7 +91,7 @@
             @dragstart="onDragStart($event, recipe)"
           >
             <div class="recipe-card-image" :style="getRecipeImageStyle(recipe)">
-              <div class="time-badge">{{ recipe.time || '30' }} min</div>
+              <div class="time-badge">{{ recipe.time || 30 }} min</div>
               <div v-if="recipe.categories && recipe.categories.length > 0" class="category-badge">
                 {{ recipe.categories[0] }}
               </div>
@@ -279,15 +279,16 @@ const updateShoppingList = async () => {
 
 // Simpel parsefunktion til at udtrække ingredienser fra opskriftstekster
 const parseIngredients = (recipe) => {
-  if (!recipe || !recipe.content) {
+  if (!recipe || (!recipe.content && !recipe.body)) {
     console.log("No content to parse ingredients from:", recipe);
     return [];
   }
   
-  console.log("Parsing ingredients from:", recipe.content);
+  const recipeContent = recipe.body || recipe.content;
+  console.log("Parsing ingredients from:", recipeContent);
   
   const ingredients = [];
-  const lines = recipe.content.split('\n');
+  const lines = recipeContent.split('\n');
   
   let inIngredientsSection = false;
   
@@ -312,14 +313,31 @@ const parseIngredients = (recipe) => {
       // Forsøg at parsere mængde og navn
       const ingredientText = trimmed.substring(1).trim();
       
+      // Forsøg at udtrække mængde og enhed fra teksten
+      const amountMatch = ingredientText.match(/^(\d+(?:[\.,]\d+)?)\s*(\w+)?/);
+      let amount = '1';
+      let name = ingredientText;
+      
+      if (amountMatch) {
+        amount = amountMatch[1];
+        // Hvis der er en enhed (f.eks. "spsk"), inkluder den i mængden
+        if (amountMatch[2]) {
+          amount = `${amount} ${amountMatch[2]}`;
+          name = ingredientText.substring(amountMatch[0].length).trim();
+        } else {
+          name = ingredientText.substring(amount.length).trim();
+        }
+      }
+      
       ingredients.push({
-        name: ingredientText,
-        amount: '1',
+        name: name,
+        amount: amount,
+        quantity: parseFloat(amount) || 1, // Numerisk værdi til optælling
         checked: false,
         recipe: recipe.title || 'Ukendt opskrift'
       });
       
-      console.log("Added ingredient:", ingredientText);
+      console.log("Added ingredient:", name, "with amount:", amount);
     }
   }
   
@@ -336,11 +354,33 @@ const mergeIngredients = (newIngredients) => {
     );
     
     if (existingIndex !== -1) {
-      // Hvis den findes, tilføj blot mængden (simpel version)
-      shoppingList.value[existingIndex].amount += `, ${newItem.amount}`;
-      shoppingList.value[existingIndex].recipe += `, ${newItem.recipe}`;
+      // Hvis den findes, optæl mængden hvis det er et tal, ellers liste de forskellige mængder
+      const existingItem = shoppingList.value[existingIndex];
+      
+      // Hvis begge ingredienser har numeriske værdier, læg dem sammen
+      if (existingItem.quantity && newItem.quantity) {
+        existingItem.quantity += newItem.quantity;
+        
+        // Hvis mængdeteksten indeholder en enhed, vis optalt mængde med enhed
+        if (existingItem.amount.includes(' ')) {
+          const unit = existingItem.amount.split(' ')[1];
+          existingItem.amount = `${existingItem.quantity} ${unit}`;
+        } else {
+          existingItem.amount = String(existingItem.quantity);
+        }
+      } else {
+        // Hvis der ikke er tal, vis blot de forskellige mængder
+        if (!existingItem.recipes) {
+          existingItem.recipes = [existingItem.recipe];
+        }
+        
+        if (!existingItem.recipes.includes(newItem.recipe)) {
+          existingItem.recipes.push(newItem.recipe);
+        }
+      }
     } else {
       // Ellers tilføj den til listen
+      newItem.recipes = [newItem.recipe];
       shoppingList.value.push(newItem);
     }
   }
@@ -418,7 +458,7 @@ onMounted(() => {
 .page-title {
   text-align: center;
   margin-bottom: 30px;
-  color: #333;
+  color: var(--color-text);
 }
 
 .planner-container {
@@ -433,7 +473,7 @@ onMounted(() => {
   grid-template-columns: repeat(7, 1fr);
   gap: 10px;
   padding: 10px;
-  background-color: #f9f9f9;
+  background-color: var(--color-background-secondary);
   border-radius: 10px;
 }
 
@@ -447,13 +487,14 @@ onMounted(() => {
   font-size: 1rem;
   margin-bottom: 10px;
   padding-bottom: 5px;
-  border-bottom: 2px solid #c62828;
+  border-bottom: 2px solid var(--color-primary);
+  color: var(--color-text);
 }
 
 .meal-dropzone {
   flex-grow: 1;
   min-height: 300px;
-  background-color: #f0f0f0;
+  background-color: var(--color-background-tertiary);
   border-radius: 5px;
   padding: 10px;
   display: flex;
@@ -466,17 +507,17 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #999;
+  color: var(--color-text-muted);
   font-style: italic;
-  border: 2px dashed #ddd;
+  border: 2px dashed var(--color-border);
   border-radius: 5px;
 }
 
 .planned-meal {
-  background-color: white;
+  background-color: var(--color-card-background);
   border-radius: 8px;
   padding: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px var(--color-card-shadow);
   position: relative;
 }
 
@@ -490,14 +531,14 @@ onMounted(() => {
 .meal-header h3 {
   font-size: 0.9rem;
   margin: 0;
-  color: #333;
+  color: var(--color-text);
 }
 
 .remove-btn {
   background: none;
   border: none;
   font-size: 1.2rem;
-  color: #c62828;
+  color: var(--color-primary);
   cursor: pointer;
   padding: 0;
   margin: 0;
@@ -505,7 +546,7 @@ onMounted(() => {
 
 .meal-desc {
   font-size: 0.8rem;
-  color: #666;
+  color: var(--color-text-secondary);
   margin: 5px 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -518,7 +559,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   font-size: 0.75rem;
-  color: #888;
+  color: var(--color-text-muted);
   margin-top: 5px;
 }
 
@@ -526,13 +567,13 @@ onMounted(() => {
   display: block;
   text-align: center;
   font-size: 0.8rem;
-  color: #c62828;
+  color: var(--color-link);
   text-decoration: none;
   margin-top: 8px;
 }
 
 .shopping-list {
-  background-color: #f9f9f9;
+  background-color: var(--color-background-secondary);
   border-radius: 10px;
   padding: 15px;
 }
@@ -540,7 +581,7 @@ onMounted(() => {
 .shopping-list h2 {
   text-align: center;
   margin-bottom: 15px;
-  color: #333;
+  color: var(--color-text);
   font-size: 1.2rem;
 }
 
@@ -556,8 +597,8 @@ onMounted(() => {
 .category-title {
   font-size: 1rem;
   margin: 10px 0;
-  color: #c62828;
-  border-bottom: 1px solid #ddd;
+  color: var(--color-primary);
+  border-bottom: 1px solid var(--color-border);
   padding-bottom: 5px;
 }
 
@@ -578,11 +619,11 @@ onMounted(() => {
 
 .checked {
   text-decoration: line-through;
-  color: #999;
+  color: var(--color-text-muted);
 }
 
 .empty-list {
-  color: #999;
+  color: var(--color-text-muted);
   font-style: italic;
   text-align: center;
   padding: 20px 0;
@@ -604,12 +645,12 @@ onMounted(() => {
 }
 
 .clear-btn {
-  background-color: #f5f5f5;
-  color: #666;
+  background-color: var(--color-background-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .print-btn {
-  background-color: #c62828;
+  background-color: var(--color-primary);
   color: white;
 }
 
@@ -630,7 +671,7 @@ onMounted(() => {
 .search-input {
   width: 100%;
   padding: 10px 20px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 30px;
   font-family: 'Lora', serif;
   font-size: 1rem;
@@ -645,9 +686,9 @@ onMounted(() => {
 .recipe-card {
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 10px var(--color-card-shadow);
   cursor: grab;
-  background: white;
+  background: var(--color-card-background);
 }
 
 .recipe-card:active {
@@ -676,7 +717,7 @@ onMounted(() => {
   position: absolute;
   bottom: 10px;
   left: 10px;
-  background-color: #c62828;
+  background-color: var(--color-primary);
   color: white;
   padding: 3px 8px;
   border-radius: 20px;
@@ -695,7 +736,7 @@ onMounted(() => {
 
 .description {
   font-size: 0.8rem;
-  color: #666;
+  color: var(--color-text-secondary);
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -716,7 +757,7 @@ onMounted(() => {
   height: 40px;
   border: 4px solid rgba(198, 40, 40, 0.2);
   border-radius: 50%;
-  border-top-color: #c62828;
+  border-top-color: var(--color-primary);
   animation: spin 1s ease-in-out infinite;
   margin-bottom: 15px;
 }

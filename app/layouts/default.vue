@@ -51,7 +51,7 @@ body {
 }
 
 .site-header {
-  background-color: var(--color-primary);
+  background-color: var(--color-header-background, var(--color-primary));
   padding: 15px 0;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
