@@ -13,8 +13,14 @@ const isOpskriftPath = computed(() =>
   route.path.startsWith('/opskrifter/') && route.path !== '/opskrifter/'
 )
 
-// Kun vis indhold hvis det ikke er en opskriftsside (som håndteres af opskrifter/[name].vue)
-const showContent = computed(() => !isOpskriftPath.value)
+// Check for specific pages that have their own component
+const isDedicatedPage = computed(() => {
+  const dedicatedPages = ['/favoritter', '/madplan']
+  return dedicatedPages.includes(route.path)
+})
+
+// Kun vis indhold hvis det ikke er en opskriftsside eller dedikeret side
+const showContent = computed(() => !isOpskriftPath.value && !isDedicatedPage.value)
 
 // Simpelt check for at se om vi er på forsiden
 const isHomepage = computed(() => route.path === '/')
@@ -22,9 +28,9 @@ const isHomepage = computed(() => route.path === '/')
 
 <template>
   <div>
-    <!-- For opskriftsider, vis ingenting, da vi lader opskrifter/[name].vue håndtere dem -->
-    <div v-if="isOpskriftPath">
-      <!-- Denne side vil ikke blive vist, da opskrifter/[name].vue har højere prioritet -->
+    <!-- For opskriftsider eller dedikerede sider, vis ingenting -->
+    <div v-if="isOpskriftPath || isDedicatedPage">
+      <!-- Denne del vil ikke blive vist, da andre komponenter har højere prioritet -->
     </div>
     
     <!-- For andre sider, inklusiv forsiden -->

@@ -1,30 +1,30 @@
 <template>
   <div class="recipe-card-container" :draggable="draggable" @dragstart="onCardDragStart">
-    <NuxtLink :to="recipe._path || '/'" class="recipe-card">
+    <a :href="recipe._path || recipe.slug || '/'" class="recipe-card" @click="navigateToRecipe">
       <div class="recipe-card-image" :style="getRecipeImageStyle(recipe)">
-        <div class="time-badge">{{ recipe.meta?.time || '?' }} min</div>
-        <div v-if="recipe.meta?.categories && recipe.meta.categories.length" class="category-badge">
-          {{ recipe.meta.categories[0] }}
+        <div class="time-badge">{{ recipe.meta?.time || recipe.time || '?' }} min</div>
+        <div v-if="hasCategories" class="category-badge">
+          {{ primaryCategory }}
         </div>
       </div>
       <div class="recipe-card-content">
         <h3>{{ recipe.title || 'Opskrift' }}</h3>
         <p class="description">{{ recipe.description || 'Ingen beskrivelse tilgængelig' }}</p>
         <div class="recipe-meta">
-          <span class="difficulty">{{ recipe.meta?.difficulty || 'Nem' }}</span>
-          <span class="servings">{{ recipe.meta?.servings || '4' }} pers.</span>
+          <span class="difficulty">{{ recipe.meta?.difficulty || recipe.difficulty || 'Nem' }}</span>
+          <span class="servings">{{ recipe.meta?.servings || recipe.servings || '4' }} pers.</span>
         </div>
-        <div class="categories" v-if="recipe.meta?.categories && recipe.meta.categories.length">
-          <span v-for="category in recipe.meta.categories" :key="category" class="category-tag">
+        <div class="categories" v-if="hasCategories">
+          <span v-for="category in getCategories" :key="category" class="category-tag">
             {{ category }}
           </span>
         </div>
       </div>
-    </NuxtLink>
+    </a>
     <button 
       class="favorite-btn" 
       :class="{ 'active': isFavorite }"
-      @click.prevent="toggleFavorite"
+      @click.stop="toggleFavorite"
       aria-label="Tilføj til favoritter"
     >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
@@ -35,7 +35,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 
 const props = defineProps({
   recipe: {
@@ -62,31 +62,103 @@ const getRecipeImageStyle = (recipe) => {
   return { backgroundImage: `url("/almaskoekken.png")` };
 };
 
+// Computed properties for categories
+const hasCategories = computed(() => {
+  return (props.recipe.meta?.categories && props.recipe.meta.categories.length > 0) || 
+         (props.recipe.categories && props.recipe.categories.length > 0);
+});
+
+const getCategories = computed(() => {
+  return props.recipe.meta?.categories || props.recipe.categories || [];
+});
+
+const primaryCategory = computed(() => {
+  if (props.recipe.meta?.categories && props.recipe.meta.categories.length > 0) {
+    return props.recipe.meta.categories[0];
+  }
+  if (props.recipe.categories && props.recipe.categories.length > 0) {
+    return props.recipe.categories[0];
+  }
+  return '';
+});
+
 // Håndter favoritter
 const favorites = ref([]);
-const recipePath = computed(() => props.recipe._path || '');
-const recipeId = computed(() => recipePath.value.split('/').pop());
 
+// Få opskrifts ID fra enten _path eller slug
+const recipeId = computed(() => {
+  if (props.recipe._path) {
+    return props.recipe._path.split('/').pop();
+  }
+  if (props.recipe.slug) {
+    return props.recipe.slug.split('/').pop();
+  }
+  return '';
+});
+
+// Tjek om denne opskrift er markeret som favorit
 const isFavorite = computed(() => {
   return favorites.value.includes(recipeId.value);
 });
 
 // Indlæs favoritter fra localStorage ved opstart
 onMounted(() => {
-  const savedFavorites = localStorage.getItem('almasKokken_favorites');
-  if (savedFavorites) {
-    favorites.value = JSON.parse(savedFavorites);
-  }
+  loadFavorites();
+  
+  // Log opskriftsdetaljer til konsollen for debugging
+  console.log('Recipe details:', {
+    id: recipeId.value,
+    path: props.recipe._path,
+    slug: props.recipe.slug,
+    title: props.recipe.title
+  });
 });
+
+// Genindlæs favoritter når andre komponenter opdaterer dem
+watch(() => favorites.value, () => {
+  console.log('Favorites updated:', favorites.value);
+}, { deep: true });
+
+// Indlæs favoritter fra localStorage
+const loadFavorites = () => {
+  try {
+    // Tjek om vi er i en browser-kontekst
+    if (process.client) {
+      const savedFavorites = localStorage.getItem('almasKokken_favorites');
+      if (savedFavorites) {
+        favorites.value = JSON.parse(savedFavorites);
+        console.log('Loaded favorites:', favorites.value);
+      }
+    }
+  } catch (error) {
+    console.error('Error loading favorites:', error);
+    favorites.value = [];
+  }
+};
 
 // Gem til localStorage når favoritter ændres
 const saveFavorites = () => {
-  localStorage.setItem('almasKokken_favorites', JSON.stringify(favorites.value));
+  try {
+    if (process.client) {
+      localStorage.setItem('almasKokken_favorites', JSON.stringify(favorites.value));
+      console.log('Saved favorites:', favorites.value);
+    }
+  } catch (error) {
+    console.error('Error saving favorites:', error);
+  }
 };
 
 // Toggle favorit status
 const toggleFavorite = (event) => {
+  event.preventDefault();
   event.stopPropagation();
+  
+  console.log('Toggle favorite for:', recipeId.value);
+  
+  if (!recipeId.value) {
+    console.error('Cannot toggle favorite: no recipe ID found');
+    return;
+  }
   
   if (isFavorite.value) {
     // Fjern fra favoritter
@@ -104,6 +176,14 @@ const toggleFavorite = (event) => {
   
   // Emit event så forældre-komponenter kan reagere
   emit('favoriteToggled', recipeId.value);
+};
+
+// Navigation
+const navigateToRecipe = (event) => {
+  // Standard navigation - lad browseren håndtere det
+  const url = props.recipe._path || props.recipe.slug || '/';
+  window.location.href = url;
+  event.preventDefault();
 };
 
 // Drag-and-drop

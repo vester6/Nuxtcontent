@@ -8,7 +8,7 @@
         <div class="nav-links">
           <NuxtLink to="/" class="nav-link">Opskrifter</NuxtLink>
           <NuxtLink to="/madplan" class="nav-link">Madplan</NuxtLink>
-          <NuxtLink to="/favoritter" class="nav-link">Favoritter</NuxtLink>
+          <a href="/favoritter" class="nav-link">Favoritter</a>
         </div>
         <div class="theme-toggle-container">
           <ThemeToggle />
