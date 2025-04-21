@@ -4,7 +4,7 @@
     <div class="hero-section">
       <!-- Baggrundsbillede i stedet for SVG mønster -->
       <div class="hero-image">
-        <img src="/almaskoekken.png" alt="Almas Køkken" />
+        <!-- Billede fjernet herfra -->
       </div>
       
       <div class="hero-content">
@@ -50,25 +50,7 @@
       </div>
       
       <template v-else>
-        <div v-for="recipe in filteredRecipes" :key="recipe.slug" class="recipe-grid-item">
-          <!-- Brug standard HTML links for at sikre fuld side-genindlæsning og undgå SPA-routing-problemer -->
-          <a :href="recipe.slug" class="recipe-card" onclick="window.location.href=this.getAttribute('href'); return false;">
-            <div class="recipe-card-image" :style="getRecipeImageStyle(recipe)">
-              <div class="time-badge">{{ recipe.time || '30' }} min</div>
-              <div v-if="recipe.categories && recipe.categories.length > 0" class="category-badge">
-                {{ recipe.categories[0] }}
-              </div>
-            </div>
-            <div class="recipe-card-content">
-              <h3>{{ recipe.title }}</h3>
-              <p class="description">{{ recipe.description }}</p>
-              <div class="recipe-meta">
-                <span class="difficulty">{{ recipe.difficulty || 'Nem' }}</span>
-                <span class="servings">{{ recipe.servings || '4' }} pers.</span>
-              </div>
-            </div>
-          </a>
-        </div>
+        <RecipeCard v-for="recipe in filteredRecipes" :key="recipe.slug" :recipe="recipe" />
       </template>
     </div>
   </div>
@@ -76,6 +58,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import RecipeCard from '~/components/RecipeCard.vue';
 
 // Hent alle opskrifter fra API'en
 const { data: recipes, pending, error } = await useFetch('/api/recipes');
@@ -123,17 +106,8 @@ const getRecipeImageStyle = (recipe) => {
     return { backgroundImage: `url(${recipe.image})` };
   }
   
-  // Tilfældigt baggrundsbillede baseret på kategorier eller slug
-  let categoryClass = 'category-default';
-  if (recipe.categories && recipe.categories.length > 0) {
-    const category = recipe.categories[0].toLowerCase();
-    if (category.includes('dessert')) categoryClass = 'category-dessert';
-    else if (category.includes('bagværk')) categoryClass = 'category-bagvaerk';
-    else if (category.includes('tradition')) categoryClass = 'category-tradition';
-    else if (category.includes('international')) categoryClass = 'category-international';
-  }
-  
-  return { backgroundColor: getCategoryColor(categoryClass) };
+  // Brug Almas Køkken billedet som standardbillede til opskrifter uden billede
+  return { backgroundImage: `url("/almaskoekken.png")` };
 };
 
 // Hjælper til at få farve baseret på kategori
@@ -191,14 +165,16 @@ const getCategoryColor = (categoryClass) => {
 }
 
 .hero-search {
-  background-color: var(--color-card-background);
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 4px 15px var(--color-card-shadow);
 }
 
 .search-input {
   width: 100%;
+  max-width: 100%; 
   padding: 12px 20px;
   border: 1px solid var(--color-input-border);
   border-radius: 30px;
@@ -207,6 +183,7 @@ const getCategoryColor = (categoryClass) => {
   margin-bottom: 15px;
   background-color: var(--color-input-background);
   color: var(--color-text);
+  box-sizing: border-box; 
 }
 
 .filter-buttons {

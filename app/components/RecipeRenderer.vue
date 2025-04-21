@@ -2,13 +2,23 @@
   <div class="recipe-container">
     <!-- Header med info og baggrund -->
     <div class="recipe-header-container">
-      <div class="header-background"></div>
+      <div 
+        class="header-background"
+        :style="getHeaderBackgroundStyle()"
+      ></div>
       <div class="recipe-header-content">
         <h1>{{ recipe.title }}</h1>
         <div class="recipe-meta">
           <span>Tid i alt {{ getMetaValue('time') }} min.</span>
           <span>Arbejdstid {{ getMetaValue('prepTime') }} min.</span>
-          <span>Antal {{ getMetaValue('servings') }} pers.</span>
+          <div class="servings-control">
+            <span>Personer</span>
+            <div class="servings-adjuster">
+              <button @click="adjustServings(-1)" class="adjust-btn" :disabled="currentServings <= 1">-</button>
+              <span>{{ currentServings }}</span>
+              <button @click="adjustServings(1)" class="adjust-btn">+</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -24,7 +34,7 @@
       <div class="structured-content">
         <div class="ingredients-content">
           <ul>
-            <li v-for="(item, index) in getIngredientsList()" :key="'ing'+index">{{ item }}</li>
+            <li v-for="(item, index) in scaledIngredients" :key="'ing'+index">{{ item }}</li>
           </ul>
         </div>
         
@@ -45,7 +55,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 const props = defineProps({
   recipe: {
@@ -54,67 +64,41 @@ const props = defineProps({
   }
 });
 
-// Til debug formål - vis alle data i recipe objektet
-const debug = ref(false); // Deaktiveres debug-visning
-
-// Log hele objektet til konsollen for at se strukturen
-onMounted(() => {
-  console.log('Recipe data (full):', props.recipe);
-  console.log('Recipe frontmatter properties:');
-  
-  // Find og log alle steder hvor time, prepTime og servings kan være gemt
-  const paths = ['time', '_source.time', 'frontmatter.time', 'value.time'];
-  const metaKeys = ['time', 'prepTime', 'servings', 'tips'];
-  
-  metaKeys.forEach(key => {
-    console.log(`Searching for ${key}:`);
-    if (props.recipe[key] !== undefined) console.log(`- Direct: ${props.recipe[key]}`);
-    if (props.recipe._source?.[key] !== undefined) console.log(`- _source: ${props.recipe._source[key]}`);
-    if (props.recipe.frontmatter?.[key] !== undefined) console.log(`- frontmatter: ${props.recipe.frontmatter[key]}`);
-  });
+// Base meta values
+const baseServingsCount = computed(() => {
+  // Forsøg at få servings fra forskellige mulige placeringer
+  if (props.recipe.meta && props.recipe.meta.servings) {
+    return parseInt(props.recipe.meta.servings) || 4;
+  } else if (props.recipe.servings) {
+    return parseInt(props.recipe.servings) || 4;
+  }
+  return 4; // Default antal personer
 });
 
-// Hjælpefunktion til at hente metadata værdier uanset hvor de er gemt
+// Portionsstyring
+const currentServings = ref(baseServingsCount.value);
+const servingsScale = computed(() => currentServings.value / baseServingsCount.value);
+
+function adjustServings(amount) {
+  currentServings.value = Math.max(1, currentServings.value + amount);
+}
+
+// Genindlæs hvis opskriften ændrer sig
+watch(() => props.recipe, () => {
+  currentServings.value = baseServingsCount.value;
+}, { deep: true });
+
+// Metaværdier
 const getMetaValue = (key) => {
   try {
-    // Undersøg først direkte på objektet
-    const directValue = props.recipe[key];
-    if (directValue !== undefined && directValue !== null) {
-      return directValue;
+    // Prøv først at få det fra meta-objektet
+    if (props.recipe.meta && props.recipe.meta[key] !== undefined) {
+      return props.recipe.meta[key];
     }
     
-    // Søg i title og prepTime for Gammeldags Æblekage specifikt
-    if (props.recipe.title === 'Gammeldags Æblekage') {
-      if (key === 'time') return 43;
-      if (key === 'prepTime') return 28;
-      if (key === 'servings') return 5;
-      if (key === 'tips') return 'Serveres bedst frisklavet. Kan fryses.';
-    }
-    
-    // Rekursivt søg efter nøglen i hele objektet
-    function findValueInObject(obj, targetKey) {
-      if (!obj || typeof obj !== 'object') return undefined;
-      
-      if (obj[targetKey] !== undefined) {
-        return obj[targetKey];
-      }
-      
-      for (const key in obj) {
-        if (key === '_id' || key === '_path' || key === 'children') continue; // Skip some properties to avoid deep recursion
-        
-        if (typeof obj[key] === 'object' && obj[key] !== null) {
-          const found = findValueInObject(obj[key], targetKey);
-          if (found !== undefined) return found;
-        }
-      }
-      
-      return undefined;
-    }
-    
-    // Søg i hele objektet
-    const foundValue = findValueInObject(props.recipe, key);
-    if (foundValue !== undefined) {
-      return foundValue;
+    // Prøv at få det direkte fra opskriften
+    if (props.recipe[key] !== undefined) {
+      return props.recipe[key];
     }
     
     // Fallback værdi
@@ -125,8 +109,89 @@ const getMetaValue = (key) => {
   }
 };
 
+// Hjælper til at skalere en ingrediens baseret på antallet af personer
+const scaleIngredient = (ingredient) => {
+  // Hvis der ikke er nogen ændring i antallet eller skaleringsfaktoren er 1, returner uændret
+  if (servingsScale.value === 1) {
+    return ingredient;
+  }
+  
+  console.log(`Scaling: ${ingredient} with factor ${servingsScale.value}`);
+  
+  // Regex til at finde mængdepatterns i starten af ingredienslinjen
+  // Matcher fx: "2 spsk", "1/2 tsk", "1,5 dl", osv.
+  const amountRegex = /^(\d+(?:[.,]\d+)?(?:\/\d+)?)\s*(\w+)?\s+(.+)$/;
+  const match = ingredient.match(amountRegex);
+  
+  if (match) {
+    let [_, amount, unit, rest] = match;
+    console.log(`Matched: amount=${amount}, unit=${unit}, rest=${rest}`);
+    
+    // Konverter til tal (inklusive eventuelle brøker)
+    let numericAmount;
+    if (amount.includes('/')) {
+      const [numerator, denominator] = amount.split('/');
+      numericAmount = parseFloat(numerator) / parseFloat(denominator);
+    } else {
+      numericAmount = parseFloat(amount.replace(',', '.'));
+    }
+    
+    if (isNaN(numericAmount)) {
+      console.log('Failed to parse amount:', amount);
+      return ingredient;
+    }
+    
+    // Beregn den nye mængde
+    const newAmount = numericAmount * servingsScale.value;
+    console.log(`New amount: ${newAmount}`);
+    
+    // Formater den nye mængde pænt
+    let formattedAmount;
+    if (Number.isInteger(newAmount)) {
+      // Hele tal
+      formattedAmount = newAmount.toString();
+    } else if (Math.abs(newAmount - Math.round(newAmount * 2) / 2) < 0.01) {
+      // Halve tal (0.5, 1.5, 2.5, etc.)
+      const wholePart = Math.floor(newAmount);
+      if (wholePart === 0) {
+        formattedAmount = '½';
+      } else {
+        formattedAmount = `${wholePart}½`;
+      }
+    } else if (Math.abs(newAmount - Math.round(newAmount * 4) / 4) < 0.01) {
+      // Kvarte (0.25, 0.75, 1.25, 1.75, etc.)
+      const quarters = Math.round(newAmount * 4);
+      const wholePart = Math.floor(quarters / 4);
+      const fractionPart = quarters % 4;
+      
+      if (fractionPart === 0) {
+        formattedAmount = wholePart.toString();
+      } else if (fractionPart === 1) {
+        formattedAmount = wholePart === 0 ? '¼' : `${wholePart}¼`;
+      } else if (fractionPart === 2) {
+        formattedAmount = wholePart === 0 ? '½' : `${wholePart}½`;
+      } else { // fractionPart === 3
+        formattedAmount = wholePart === 0 ? '¾' : `${wholePart}¾`;
+      }
+    } else {
+      // Andre decimaltal - vises med én decimal hvis nødvendigt
+      formattedAmount = newAmount.toFixed(1).replace(/\.0$/, '');
+    }
+    
+    // Sæt det hele sammen igen
+    return unit 
+      ? `${formattedAmount} ${unit} ${rest}`
+      : `${formattedAmount} ${rest}`;
+  }
+  
+  // Hvis vi ikke kunne matche, returner uændret
+  return ingredient;
+};
+
 // Hent ingredienslisten baseret på body elementer
 const getIngredientsList = () => {
+  console.log("Getting ingredients list. Current servings:", currentServings.value);
+  
   if (!props.recipe.body) return [];
   
   // Find alle list items under første ul efter "Ingredienser"
@@ -208,8 +273,19 @@ const getIngredientsList = () => {
     ];
   }
   
-  return ingredients;
+  console.log("Original ingredients:", ingredients);
+  
+  // Skaler ingredienserne baseret på antallet af personer
+  const scaledIngredients = ingredients.map(scaleIngredient);
+  console.log("Scaled ingredients:", scaledIngredients);
+  
+  return scaledIngredients;
 };
+
+const scaledIngredients = computed(() => {
+  const ingredients = getIngredientsList();
+  return ingredients.map(scaleIngredient);
+});
 
 // Hent fremgangsmåden baseret på body elementer
 const getStepsList = () => {
@@ -309,6 +385,25 @@ function getTextFromNode(node) {
   
   return '';
 }
+
+// Tilføjer dynamisk baggrundsstil til header-baggrunden
+function getHeaderBackgroundStyle() {
+  // Tjek om opskriften har et billede
+  if (recipe.image) {
+    return {
+      backgroundImage: `url(${recipe.image})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center'
+    };
+  }
+  
+  // Brug Almas Køkken billedet som standardbillede
+  return {
+    backgroundImage: `url('/almaskoekken.png')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center'
+  };
+}
 </script>
 
 <style scoped>
@@ -337,7 +432,6 @@ function getTextFromNode(node) {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #ffe6ea 0%, #f5c6d6 100%);
 }
 
 .recipe-header-content {
@@ -375,6 +469,51 @@ function getTextFromNode(node) {
   border-radius: 5px;
   font-family: 'Lora', serif;
   font-style: italic;
+}
+
+.servings-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.servings-adjuster {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.adjust-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--color-primary, #e91e63);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.adjust-btn:hover:not(:disabled) {
+  background-color: var(--color-primary-light, #f48fb1);
+  transform: scale(1.1);
+}
+
+.adjust-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.adjust-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .recipe-content {

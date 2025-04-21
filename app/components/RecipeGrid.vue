@@ -207,11 +207,13 @@ const setCategory = (category) => {
 
 .search-input {
   width: 100%;
+  max-width: 100%;
   padding: 10px 15px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 20px;
   font-family: 'Lora', serif;
   font-size: 0.9rem;
+  box-sizing: border-box;
 }
 
 .recipe-count {

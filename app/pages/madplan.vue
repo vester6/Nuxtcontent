@@ -83,24 +83,13 @@
         </div>
         
         <template v-else>
-          <div 
+          <RecipeCard
             v-for="recipe in filteredRecipes" 
             :key="recipe.slug" 
-            class="recipe-card"
-            draggable="true"
-            @dragstart="onDragStart($event, recipe)"
-          >
-            <div class="recipe-card-image" :style="getRecipeImageStyle(recipe)">
-              <div class="time-badge">{{ recipe.time || 30 }} min</div>
-              <div v-if="recipe.categories && recipe.categories.length > 0" class="category-badge">
-                {{ recipe.categories[0] }}
-              </div>
-            </div>
-            <div class="recipe-card-content">
-              <h3>{{ recipe.title }}</h3>
-              <p class="description">{{ recipe.description }}</p>
-            </div>
-          </div>
+            :recipe="recipe"
+            :draggable="true"
+            @dragstart="onRecipeCardDragStart"
+          />
         </template>
       </div>
     </div>
@@ -109,6 +98,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import RecipeCard from '~/components/RecipeCard.vue';
 
 // Hent alle opskrifter fra API'en
 const { data: recipes, pending, error } = await useFetch('/api/recipes');
@@ -185,7 +175,7 @@ const getMealsForDay = (dayId) => {
 };
 
 // Drag-and-drop håndtering
-const onDragStart = (event, recipe) => {
+const onRecipeCardDragStart = (event, recipe) => {
   event.dataTransfer.setData('recipe', JSON.stringify(recipe));
 };
 

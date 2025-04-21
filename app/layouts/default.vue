@@ -1,6 +1,6 @@
 <template>
   <div class="layout">
-    <header class="site-header">
+    <header class="site-header" :class="{ 'dark-mode': isDarkMode }">
       <nav class="main-nav">
         <div class="logo-container">
           <a href="/" class="logo-link">Almas Køkken</a>
@@ -8,6 +8,7 @@
         <div class="nav-links">
           <NuxtLink to="/" class="nav-link">Opskrifter</NuxtLink>
           <NuxtLink to="/madplan" class="nav-link">Madplan</NuxtLink>
+          <NuxtLink to="/favoritter" class="nav-link">Favoritter</NuxtLink>
         </div>
         <div class="theme-toggle-container">
           <ThemeToggle />
@@ -29,6 +30,27 @@
 
 <script setup>
 import ThemeToggle from '~/components/ThemeToggle.vue';
+import { ref, onMounted } from 'vue';
+
+// Check om vi er i dark mode
+const isDarkMode = ref(false);
+
+// Opdater dark mode status når komponenten er loadet
+onMounted(() => {
+  // Check om body har dark-theme klassen
+  isDarkMode.value = document.body.classList.contains('dark-theme');
+  
+  // Lyt efter ændringer i tema
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === 'class') {
+        isDarkMode.value = document.body.classList.contains('dark-theme');
+      }
+    });
+  });
+  
+  observer.observe(document.body, { attributes: true });
+});
 </script>
 
 <style>
@@ -52,8 +74,25 @@ body {
 
 .site-header {
   background-color: var(--color-header-background, var(--color-primary));
+  background-image: 
+    linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
   padding: 15px 0;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 10;
+}
+
+.site-header.dark-mode {
+  background-image: 
+    linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.1) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.1) 75%);
 }
 
 .main-nav {

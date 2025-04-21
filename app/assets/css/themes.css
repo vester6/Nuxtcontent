@@ -20,6 +20,7 @@
   --color-link: #c62828;
   --color-hover: #e57373;
   --color-header-background: var(--color-primary); /* Definerer header-baggrund til at være samme som primærfarven i light mode */
+  --header-pattern: url("../../../public/pattern-red.png");
 }
 
 /* Dark theme */
@@ -44,6 +45,7 @@
   --color-link: #ef5350;
   --color-hover: #ff867c;
   --color-header-background: #000000; /* Ny variabel for header-baggrund i dark mode */
+  --header-pattern: url("../../../public/pattern-dark.png");
 }
 
 /* Smooth transitions when switching themes */
