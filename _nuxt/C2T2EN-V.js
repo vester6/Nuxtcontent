@@ -1,1 +1,0 @@
-import{l as s,f as r,k as n,a7 as o}from"./Jfa0KLRP.js";const t={};function a(e,c){return n(),r("p",null,[o(e.$slots,"default")])}const _=Object.assign(s(t,[["render",a]]),{__name:"ProseP"});export{_ as default};
